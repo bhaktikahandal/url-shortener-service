@@ -4,17 +4,21 @@ import com.example.demo.controllers.requests.UrlRequest;
 import com.example.demo.models.UrlEntity;
 import com.example.demo.repositories.UrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.apache.commons.codec.digest.DigestUtils;
 
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class UrlService {
     private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int BASE = CHARACTERS.length();
     private static final int SHORT_URL_LENGTH = 6;
+    private long counter = 1L;
+
     private static final String BASE_URL = "http://localhost:8080/";
 
     private final UrlRepository urlRepository;
@@ -24,7 +28,8 @@ public class UrlService {
         this.urlRepository = urlMappingRepository;
     }
 
-    public String shortenUrl(UrlRequest urlRequest) {
+    @Async
+    public CompletableFuture<String> shortenUrl(UrlRequest urlRequest) {
         String originalUrl = urlRequest.getOriginalUrl();
         String customUrl = urlRequest.getCustomUrl();
         if (customUrl != null && !customUrl.isEmpty()) {
@@ -41,15 +46,16 @@ public class UrlService {
         urlEntity.setShortUrl(customUrl);
         urlRepository.save(urlEntity);
 
-        return BASE_URL + customUrl;
+        return CompletableFuture.completedFuture(BASE_URL + customUrl);
     }
 
-    public String getOriginalUrl(String shortURL) {
+    @Async
+    public CompletableFuture<String> getOriginalUrl(String shortURL) {
         UrlEntity urlEntity = urlRepository.findByShortUrl(shortURL);
         if (urlEntity != null) {
-            return urlEntity.getOriginalUrl();
+            return CompletableFuture.completedFuture(urlEntity.getOriginalUrl());
         }
-        return "URL not found";
+        return CompletableFuture.completedFuture("URL not found");
     }
 
     private String generateShortURL() {

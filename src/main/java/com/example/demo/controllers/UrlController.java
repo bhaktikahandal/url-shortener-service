@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.CompletableFuture;
+
 @RestController
 public class UrlController {
     private final UrlService urlService;
@@ -17,16 +19,14 @@ public class UrlController {
     }
 
     @PostMapping("/shorten")
-    public ResponseEntity<String> shortenUrl(@RequestBody UrlRequest urlRequest) {
-        String shortUrl = urlService.shortenUrl(urlRequest);
-        return new ResponseEntity<>(shortUrl, HttpStatus.OK);
+    public CompletableFuture<ResponseEntity<String>> shortenUrl(@RequestBody UrlRequest urlRequest) {
+        return urlService.shortenUrl(urlRequest).thenApply(result -> new ResponseEntity<>(result, HttpStatus.OK));
     }
 
     @GetMapping("/{shortUrl}")
-    public ResponseEntity<String> getOriginalUrl(@PathVariable String shortUrl) {
-        String originalUrl = urlService.getOriginalUrl(shortUrl);
-        return originalUrl != null
-                ? ResponseEntity.status(HttpStatus.FOUND).header("Location", originalUrl).build()
-                : ResponseEntity.notFound().build();
+    public CompletableFuture<ResponseEntity<String>> getOriginalUrl(@PathVariable String shortUrl) {
+        return urlService.getOriginalUrl(shortUrl)
+                .thenApply(result -> ResponseEntity.status(HttpStatus.FOUND).header("Location", result).build());
+
     }
 }
