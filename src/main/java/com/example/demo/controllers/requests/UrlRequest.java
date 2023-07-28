@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -14,5 +12,5 @@ import java.time.LocalDateTime;
 public class UrlRequest {
         private String originalUrl;
         private String customUrl;
-        private LocalDateTime expirationDate;
+        private long userId;
     }
